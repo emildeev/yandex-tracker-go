@@ -104,7 +104,7 @@ type User struct {
 	WelcomeMailSent bool `json:"welcomeMailSent"`
 }
 
-func (t *trackerClient) Myself() (*User, error) {
+func (t *TrackerClient) Myself() (*User, error) {
 	request := t.client.R().SetHeaders(t.headers)
 	resp, err := request.Get(baseUrl + "/v2/myself")
 	if err != nil {
@@ -112,7 +112,9 @@ func (t *trackerClient) Myself() (*User, error) {
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("wrong status code: %d, message=%s, headers=%s", resp.StatusCode(), string(resp.Body()), t.headers)
+		return nil, fmt.Errorf(
+			"wrong status code: %d, message=%s, headers=%s", resp.StatusCode(), string(resp.Body()), t.headers,
+		)
 	}
 
 	result := new(User)

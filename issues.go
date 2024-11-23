@@ -172,7 +172,7 @@ type FindIssuesOptions struct {
 	Query *string `json:"query,omitempty"`
 }
 
-func (t *trackerClient) CreateIssue(opts *CreateIssueOptions) (*Issue, *resty.Response, error) {
+func (t *TrackerClient) CreateIssue(opts *CreateIssueOptions) (*Issue, *resty.Response, error) {
 	req := t.NewRequest(resty.MethodPost, "/v2/issues/", opts)
 	result := new(Issue)
 	resp, err := t.Do(req, result)
@@ -182,7 +182,7 @@ func (t *trackerClient) CreateIssue(opts *CreateIssueOptions) (*Issue, *resty.Re
 	return result, resp, nil
 }
 
-func (t *trackerClient) FindIssues(opts *FindIssuesOptions, listOpts *ListOptions) ([]*Issue, *resty.Response, error) {
+func (t *TrackerClient) FindIssues(opts *FindIssuesOptions, listOpts *ListOptions) ([]*Issue, *resty.Response, error) {
 	req := t.NewRequest(resty.MethodPost, "/v2/issues/_search", opts)
 	// TODO:
 	if listOpts != nil {
@@ -202,7 +202,7 @@ func (t *trackerClient) FindIssues(opts *FindIssuesOptions, listOpts *ListOption
 	return result, resp, nil
 }
 
-func (t *trackerClient) GetIssue(issueKey string) (*Issue, *resty.Response, error) {
+func (t *TrackerClient) GetIssue(issueKey string) (*Issue, *resty.Response, error) {
 	req := t.NewRequest(resty.MethodGet, "/v2/issues/"+issueKey, nil)
 	result := new(Issue)
 	resp, err := t.Do(req, result)

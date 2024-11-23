@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	_ Client = (*trackerClient)(nil)
+	_ Client = (*TrackerClient)(nil)
 )
 
 const (
@@ -38,7 +38,7 @@ type Client interface {
 	WithDebug(d bool)
 }
 
-func New(token, xOrgID, xCloudOrgID string) Client {
+func New(token, xOrgID, xCloudOrgID string) *TrackerClient {
 	headers := map[string]string{
 		"Content-Type":  "application/json",
 		"Authorization": token,
@@ -51,26 +51,26 @@ func New(token, xOrgID, xCloudOrgID string) Client {
 		headers["X-Org-Id"] = xOrgID
 	}
 
-	return &trackerClient{
+	return &TrackerClient{
 		client:  resty.New(),
 		headers: headers,
 	}
 }
 
-type trackerClient struct {
+type TrackerClient struct {
 	headers map[string]string
 	client  *resty.Client
 }
 
-func (t *trackerClient) WithLogger(l resty.Logger) {
+func (t *TrackerClient) WithLogger(l resty.Logger) {
 	t.client.SetLogger(l)
 }
 
-func (t *trackerClient) WithDebug(d bool) {
+func (t *TrackerClient) WithDebug(d bool) {
 	t.client.SetDebug(d)
 }
 
-func (t *trackerClient) NewRequest(method, path string, opt interface{}) *resty.Request {
+func (t *TrackerClient) NewRequest(method, path string, opt interface{}) *resty.Request {
 	req := t.client.R()
 	req.Method = method
 	req.URL = baseUrl + path
@@ -80,13 +80,15 @@ func (t *trackerClient) NewRequest(method, path string, opt interface{}) *resty.
 	return req.SetHeaders(t.headers)
 }
 
-func (t *trackerClient) Do(req *resty.Request, v interface{}) (*resty.Response, error) {
+func (t *TrackerClient) Do(req *resty.Request, v interface{}) (*resty.Response, error) {
 	resp, err := req.Send()
 	if err != nil {
 		return nil, fmt.Errorf("request: %w", err)
 	}
 	if resp.IsError() {
-		return nil, fmt.Errorf("wrong status code: %d, message=%s, headers=%s", resp.StatusCode(), string(resp.Body()), t.headers)
+		return nil, fmt.Errorf(
+			"wrong status code: %d, message=%s, headers=%s", resp.StatusCode(), string(resp.Body()), t.headers,
+		)
 	}
 	if err := json.Unmarshal(resp.Body(), v); err != nil {
 		return nil, fmt.Errorf("json.Unmarshal: %w", err)
@@ -94,7 +96,7 @@ func (t *trackerClient) Do(req *resty.Request, v interface{}) (*resty.Response, 
 	return resp, nil
 }
 
-func (t *trackerClient) GetTicket(ticketKey string) (Ticket, error) {
+func (t *TrackerClient) GetTicket(ticketKey string) (Ticket, error) {
 	request := t.client.R().SetHeaders(t.headers)
 	resp, err := request.Get(ticketUrl + ticketKey)
 	if err != nil {
@@ -113,7 +115,7 @@ func (t *trackerClient) GetTicket(ticketKey string) (Ticket, error) {
 	return result, nil
 }
 
-func (t *trackerClient) PatchTicket(ticketKey string, body map[string]string) (Ticket, error) {
+func (t *TrackerClient) PatchTicket(ticketKey string, body map[string]string) (Ticket, error) {
 	request := t.client.R().SetHeaders(t.headers)
 	resp, err := request.
 		SetBody(body).
@@ -134,7 +136,7 @@ func (t *trackerClient) PatchTicket(ticketKey string, body map[string]string) (T
 	return result, nil
 }
 
-func (t *trackerClient) GetTicketComments(ticketKey string) (TicketComments, error) {
+func (t *TrackerClient) GetTicketComments(ticketKey string) (TicketComments, error) {
 	request := t.client.R().SetHeaders(t.headers)
 	resp, err := request.Get(ticketUrl + ticketKey + ticketComments)
 	if err != nil {
